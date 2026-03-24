@@ -1,0 +1,26 @@
+{
+    "sourceFile": "gpd.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1774351808003,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1774352945480,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-import matlab\r\n+# import matlab\r\n import matlab.engine\r\n import numpy as np\r\n # engine = matlab.engine.start_matlab() # Start MATLAB process\r\n # engine = matlab.engine.start_matlab(\"-desktop\") # Start MATLAB process with graphic UI\r\n"
+                },
+                {
+                    "date": 1774354814715,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,5 @@\n-# import matlab\r\n+import matlab\r\n import matlab.engine\r\n import numpy as np\r\n # engine = matlab.engine.start_matlab() # Start MATLAB process\r\n # engine = matlab.engine.start_matlab(\"-desktop\") # Start MATLAB process with graphic UI\r\n"
+                }
+            ],
+            "date": 1774351808003,
+            "name": "Commit-0",
+            "content": "import matlab\r\nimport matlab.engine\r\nimport numpy as np\r\n# engine = matlab.engine.start_matlab() # Start MATLAB process\r\n# engine = matlab.engine.start_matlab(\"-desktop\") # Start MATLAB process with graphic UI\r\nimport matplotlib.pyplot as plt\r\n\r\n\r\nclass GPD:\r\n\r\n\r\n\r\n    def __init__(self)   :\r\n        self.engine = matlab.engine.start_matlab()  # Start MATLAB process\r\n        self.PARA = [[[], []] for i in range(10)]\r\n        print(\"start GPD\")\r\n\r\n    def _ensure_para_size(self, index):\r\n        while len(self.PARA) <= index:\r\n            self.PARA.append([[], []])\r\n\r\n\r\n    def gpd(self, data, threshold , numberOfUE):\r\n        self._ensure_para_size(numberOfUE)\r\n\r\n        # 取得是过去slice的倍数的值  并且超过阈值\r\n        slice = 100\r\n        segment = len(data) // slice\r\n        data = data[-1 * segment * slice:]\r\n        # print(data)\r\n        temp = []\r\n        left = -1 * segment * slice\r\n        for i in range(segment):\r\n            right = left + slice\r\n            if right == 0:\r\n                mid = data[left:]\r\n            else:\r\n                mid = data[left:right]\r\n            if max(mid) >= threshold:\r\n                temp.append(max(mid))\r\n            # print(mid)\r\n            left += slice\r\n        print(\"temp\",len( temp))\r\n        if not temp:\r\n            return\r\n        temp = matlab.double(temp)\r\n        # temp = []\r\n        threshold = [4.46 * 10 ** 7]\r\n        # threshold = threshold.tolist()\r\n        threshold = matlab.double(threshold)\r\n        # res  = self.engine.gpfit(temp)\r\n\r\n        ans = self.engine.gpd(temp, threshold)\r\n        res = ans[0][0:2]\r\n\r\n        # print(res)\r\n        probability = ans[0][2]\r\n        # # print(\r\n        #     \"====================================================probability===========================================\",\r\n        #     probability)\r\n        self.PARA[numberOfUE][0].append(res[0])\r\n        self.PARA[numberOfUE][1].append(res[1])\r\n\r\n        return [res , probability]\r\n        # return [res]\r\n\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    aa = GPD()\r\n    data = [i for i in range(20)]\r\n    threshold = 1\r\n\r\n    res = aa.gpd(data, threshold, 0)\r\n\r\n    print(aa.PARA)\r\n    print(res)\r\n"
+        }
+    ]
+}

@@ -3,7 +3,7 @@ import random
 
 class MatrixGame():
 
-    def __init__(self, actions, Q ,Qx ,Qy, Qz, M1, M2, BW):
+    def __init__(self, actions, Q ,Qx ,Qy, Qz, M1, M2, BW, reward_mode="energy"):
         self.Q = Q  # 任务等待队列
         self.Qx = Qx  # 虚拟队列Qx
         self.Qy = Qy  # 虚拟队列Qy
@@ -13,6 +13,7 @@ class MatrixGame():
 
         self.num_ue = len(actions)
         self.BW = BW                  # BW =10MHz    带宽
+        self.reward_mode = reward_mode
         self.F = 10 * pow(10, 9)                    # F =10Ghz     MEC 计算能力
         self.V = 4 * pow(10, 27)                    # V =4 (Mbits)^2/J   李雅普诺夫权衡参数
         self.tau = pow(10, -2)                      # 时隙τ，1ms
@@ -126,9 +127,9 @@ class MatrixGame():
         theta_pr = 0
         pr_Q = 0
         tsum = 0
-        reward = [[] for _ in range(self.num_ue)]
+        reward = np.zeros(self.num_ue)
         cost_local = 0
-        cost_local_record = [[] for _ in range(self.num_ue)]
+        cost_local_record = np.zeros(self.num_ue)
 
         cost_ser = 0
         cost_ser1 = 0
@@ -169,8 +170,11 @@ class MatrixGame():
                 cost_ser = cost_ser1 + cost_ser2  # 卸载计算能耗
                 #print('cost_ser', cost_ser)
             tsum = self.bn[i] * self.action_space[actions[i]][0] * ((1 + self.Qx[i] -self.q0 * self.lambda_n[i]) * self.Q[i] - self.Qx[i] * self.lambda_n[i]+ (2 * (self.Q[i] - self.q0) * (self.Qz[i] + (self.Q[i] - self.q0) * (self.Q[i] - self.q0) - self.M2[i]) + self.Q[i] + self.Qy[i] - self.M1[i])* (1 if self.Q[i] > self.q0 else 0))
-            # reward[i] = (-(tsum / (10 ** 25) + self.V * (cost_ser + cost_local)) + 10**26) / (10 ** 25)
-            reward[i] = - (cost_ser + cost_local)
+            if self.reward_mode == "lyapunov":
+                lyapunov_term = (tsum / (10 ** 25)) + (self.V * (cost_ser + cost_local) / (10 ** 25))
+                reward[i] = -lyapunov_term
+            else:
+                reward[i] = - (cost_ser + cost_local)
             cost_local_record[i] = cost_local
 
 

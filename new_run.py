@@ -15,11 +15,12 @@ import xlsxwriter    ##  TLIU
 
 
 if __name__ == '__main__':
-    nb_episode = 2000
+    nb_episode = 50000
     actions = np.arange(8)
     user_num = 10
     lambda_n = np.zeros(user_num)
-    OUTPUT = []              #
+    OUTPUT = []
+    aatemp = GPD()#
     for i in range(user_num):                           # 每比特需要周期量 70~800 cycles/bits
         if i % 5 == 0:
             lambda_n[i] = 0.001
@@ -84,11 +85,11 @@ if __name__ == '__main__':
             Q_array_histroy[i].append(Q_array[i])
         if episode % 50 == 0 and episode != 0:
             for i in range(user_num):
-                aa = GPD()
+
                 data = Q_array_histroy[i]
                 # data = [10000000000000 for i in range(200) ]
                 # res = aa.gpd(  data  , 3.96*pow(10,5)  )
-                res = aa.gpd(data, 3.96 * pow(10, 6)  )
+                res = aatemp.gpd(data, 3.96 * pow(10, 6) ,i  )
                 if res:
                     queue_relay_array[i].GPD1 = res[0][0]
                     queue_relay_array[i].GPD2 = res[0][1]
@@ -105,7 +106,7 @@ if __name__ == '__main__':
                   M1=M1_array,
                   M2=M2_array,BW= 10 * pow(10, 6))
 
-        reward, bn, lumbda, rff = game.step(actions=iteration_actions)
+        reward, _,bn, lumbda, rff = game.step(actions=iteration_actions)
         print("episode", episode,"reward",sum(reward))
         OUTPUT.append(sum(reward))
 
@@ -128,14 +129,30 @@ if __name__ == '__main__':
         print(wolf_agent_array[i].pi_average)
 
 
-    plt.plot(np.arange(len(reward_history)), reward_history, label="all")
+    # plt.plot(np.arange(len(reward_history)), reward_history, label="all")
+    # plt.show()
+
+
+    Y = aatemp.PARA[0][0]
+    plt.plot(np.arange(len(Y)), Y, label="all")
     plt.show()
 
+    # Y = aatemp.PARA[0][1]
+    # plt.plot(np.arange(len(Y)), Y, label="all")
+    # plt.show()
+
+    data = DTE("./picture/para/para0")   ##  TLIU
+    data.write(aatemp.PARA[0][0][2:] )
+
+    data = DTE("./picture/para/para1")   ##  TLIU
+    data.write(aatemp.PARA[0][1][2:])
 
 
     data = DTE("./picture/pic2/wolf")   ##  TLIU
     print(OUTPUT)
     data.write(OUTPUT)
+
+
 
 
 

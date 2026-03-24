@@ -2,7 +2,7 @@
 
 
 function res = gpd(y,threshold )
-threshold
+
 [F,xi] = ecdf(y);
 paramEsts = gpfit(y);
 kHat      = paramEsts(1);
@@ -36,24 +36,29 @@ if  (xi(1) <=  threshold)  & ( threshold < xi(length)  )
     end
 end
 for  i=1:length
-    F(i) = 1 - F(i)
-    yi(i) = 1 - yi(i)
+    F(i) = 1 - F(i);
+    yi(i) = 1 - yi(i);
+end
+
+isPicture = 0;
+if isPicture > 0
+    plot(xi,yi,'r');% ÄâºÏ³öÀ´µÄÏß
+    hold on;
+    stairs(xi,F,'b');  % ÊäÈëµÄÊý¾Ý
+    hold on;
+    %plot(threshold,probability,'ro')
+    hold on
+    xlabel('Queue length Q_{i}(t)  /bits q_{0}=3.76*10^7 bits')
+    ylabel('CCDF')
+    legend('Approximated GPD','Numerial results')
+    %saveas(gcf,['.\gpd\',num2str(length),'.fig'])
+    saveas(gcf,['.\gpd\',num2str(length),'.png'])
+    hold off
+    xlswrite(['.\gpd\',num2str(length),'.xlsx']  , [xi,F,yi])
 end
 
 
-plot(xi,yi,'-o');
-hold on;
-stairs(xi,F,'b');
-hold on;
-%plot(threshold,probability,'ro')
-hold on
 
-xlabel('Queue length Q_{i}(t)  /bits ï¼ˆq_{0}=3.76*10^7 bitsï¼‰')
-ylabel('CCDF')
-legend('Approximated GPD','Numerial results')
-saveas(gcf,['.\gpd\',num2str(length),'.fig'])
-saveas(gcf,['.\gpd\',num2str(length),'.png'])
-hold off
 %probability = 0.55
 res = [kHat,sigmaHat ,probability] ;
 end

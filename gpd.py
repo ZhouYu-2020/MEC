@@ -12,15 +12,22 @@ class GPD:
 
     def __init__(self)   :
         self.engine = matlab.engine.start_matlab()  # Start MATLAB process
+        self.PARA = [[[], []] for i in range(10)]
         print("start GPD")
 
-    def gpd(self, data, threshold):
+    def _ensure_para_size(self, index):
+        while len(self.PARA) <= index:
+            self.PARA.append([[], []])
+
+
+    def gpd(self, data, threshold , numberOfUE):
+        self._ensure_para_size(numberOfUE)
 
         # 取得是过去slice的倍数的值  并且超过阈值
-        slice = 1
+        slice = 100
         segment = len(data) // slice
         data = data[-1 * segment * slice:]
-        print(data)
+        # print(data)
         temp = []
         left = -1 * segment * slice
         for i in range(segment):
@@ -33,7 +40,7 @@ class GPD:
                 temp.append(max(mid))
             # print(mid)
             left += slice
-        print("temp", temp)
+        print("temp",len( temp))
         if not temp:
             return
         temp = matlab.double(temp)
@@ -51,6 +58,8 @@ class GPD:
         # # print(
         #     "====================================================probability===========================================",
         #     probability)
+        self.PARA[numberOfUE][0].append(res[0])
+        self.PARA[numberOfUE][1].append(res[1])
 
         return [res , probability]
         # return [res]
@@ -62,7 +71,7 @@ if __name__ == "__main__":
     data = [i for i in range(20)]
     threshold = 1
 
-    res = aa.gpd(data, threshold)
+    res = aa.gpd(data, threshold, 0)
 
-    # print(segment)
+    print(aa.PARA)
     print(res)
