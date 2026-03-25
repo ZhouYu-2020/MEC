@@ -63,8 +63,19 @@ def compute_last_delay_fallback(game, actions, rf):
     return last_delay
 
 
+def valid_gpd_params(gpd1, gpd2):
+    if not np.isfinite(gpd1) or not np.isfinite(gpd2):
+        return False
+    if gpd1 <= 0:
+        return False
+    # Need xi < 0.5 for finite second moment; keep a margin for numerical stability.
+    if gpd2 <= -0.9 or gpd2 >= 0.49:
+        return False
+    return True
+
+
 def run_one(nb_episode, warmup_ratio, user_num, load_scale, bw_scale, f_scale, tmax_scale, seed,
-            gpd_update_interval=50, gpd_estimator=None):
+            gpd_update_interval=50, gpd_min_episode_for_update=300, gpd_estimator=None):
     np.random.seed(seed)
     random.seed(seed)
 
@@ -124,17 +135,25 @@ def run_one(nb_episode, warmup_ratio, user_num, load_scale, bw_scale, f_scale, t
         game.t_max = game.t_max * tmax_scale
 
         reward, cost, bn, lumbda, rff = game.step(actions=iteration_actions)
+        reward = np.nan_to_num(reward, nan=-1e6, posinf=-1e6, neginf=-1e6)
 
-        for i in range(user_num):
-            q_history[i].append(q_array[i])
-        if gpd_estimator is not None and episode % gpd_update_interval == 0 and episode != 0:
+        if (
+            gpd_estimator is not None
+            and episode % gpd_update_interval == 0
+            and episode >= gpd_min_episode_for_update
+        ):
             for i in range(user_num):
+                if len(q_history[i]) < gpd_min_episode_for_update:
+                    continue
                 res = gpd_estimator.gpd(q_history[i], queue_relay_array[i].q0, i)
                 if res:
-                    queue_relay_array[i].GPD1 = float(res[0][0])
-                    queue_relay_array[i].GPD2 = float(res[0][1])
-                    queue_relay_array[i].updateM1()
-                    queue_relay_array[i].updateM2()
+                    new_gpd1 = float(res[0][0])
+                    new_gpd2 = float(res[0][1])
+                    if valid_gpd_params(new_gpd1, new_gpd2):
+                        queue_relay_array[i].GPD1 = new_gpd1
+                        queue_relay_array[i].GPD2 = new_gpd2
+                        queue_relay_array[i].updateM1()
+                        queue_relay_array[i].updateM2()
 
         model_last_delay = getattr(game, "last_delay", None)
         if model_last_delay is not None:
@@ -151,6 +170,7 @@ def run_one(nb_episode, warmup_ratio, user_num, load_scale, bw_scale, f_scale, t
             queue_relay_array[i].updateQx()
             queue_relay_array[i].updateQy()
             queue_relay_array[i].updateQz()
+            q_history[i].append(queue_relay_array[i].Q)
 
         if episode >= warmup:
             for i in range(user_num):
@@ -168,6 +188,16 @@ def run_one(nb_episode, warmup_ratio, user_num, load_scale, bw_scale, f_scale, t
     p_queue_user = queue_viol_count / float(stat_episodes)
     m1_user = tail_excess_sum / float(stat_episodes)
     m2_user = tail_excess_sq_sum / float(stat_episodes)
+    m1_excess_cond_user = np.divide(
+        tail_excess_sum,
+        np.maximum(queue_viol_count, 1.0),
+        dtype=float,
+    )
+    m2_excess_cond_user = np.divide(
+        tail_excess_sq_sum,
+        np.maximum(queue_viol_count, 1.0),
+        dtype=float,
+    )
 
     lambda_user = np.array([qr.lumbda for qr in queue_relay_array], dtype=float)
     gpd1_user = np.array([qr.GPD1 for qr in queue_relay_array], dtype=float)
@@ -179,10 +209,11 @@ def run_one(nb_episode, warmup_ratio, user_num, load_scale, bw_scale, f_scale, t
     # C6: queue-overflow probability bound violation.
     p_c6_viol = float(np.mean(p_queue_user > lambda_user))
     # C7 / C8: tail first/second moment bound violations derived from GPD parameters.
-    c7_bound = gpd1_user / (1 - gpd2_user)
-    c8_bound = 2 * gpd1_user * gpd1_user / ((1 - gpd2_user) * (1 - 2 * gpd2_user))
-    p_c7_m1_viol = float(np.mean(m1_user > c7_bound))
-    p_c7_m2_viol = float(np.mean(m2_user > c8_bound))
+    c7_bound = gpd1_user / np.maximum(1 - gpd2_user, 1e-6)
+    c8_den = (1 - gpd2_user) * (1 - 2 * gpd2_user)
+    c8_bound = 2 * gpd1_user * gpd1_user / np.maximum(c8_den, 1e-6)
+    p_c7_m1_viol = float(np.mean(m1_excess_cond_user > c7_bound))
+    p_c7_m2_viol = float(np.mean(m2_excess_cond_user > c8_bound))
 
     return p_c5_viol, p_c6_viol, p_c7_m1_viol, p_c7_m2_viol
 
@@ -198,6 +229,7 @@ def main():
     parser.add_argument("--warmup_ratio", type=float, default=0.7)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--gpd_update_interval", type=int, default=50)
+    parser.add_argument("--gpd_min_episode_for_update", type=int, default=300)
     parser.add_argument("--disable_gpd_online_update", action="store_true")
     parser.add_argument("--out", type=str, default="picture/reliability/reliability_results.csv")
     args = parser.parse_args()
@@ -259,6 +291,7 @@ def main():
                     tmax_scale=tmax_scale,
                     seed=args.seed,
                     gpd_update_interval=args.gpd_update_interval,
+                    gpd_min_episode_for_update=args.gpd_min_episode_for_update,
                     gpd_estimator=gpd_estimator,
                 )
 

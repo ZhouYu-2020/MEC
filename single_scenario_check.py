@@ -69,12 +69,23 @@ def compute_last_delay_fallback(game, actions, rf):
     return last_delay
 
 
+def valid_gpd_params(gpd1, gpd2):
+    if not np.isfinite(gpd1) or not np.isfinite(gpd2):
+        return False
+    if gpd1 <= 0:
+        return False
+    if gpd2 <= -0.9 or gpd2 >= 0.49:
+        return False
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--episodes", type=int, default=1500)
     parser.add_argument("--warmup_ratio", type=float, default=0.3)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--gpd_update_interval", type=int, default=50)
+    parser.add_argument("--gpd_min_episode_for_update", type=int, default=300)
     parser.add_argument("--out_csv", type=str, default="picture/reliability/single_case_reward.csv")
     args = parser.parse_args()
 
@@ -149,26 +160,36 @@ def main():
             reward_mode="lyapunov",
         )
 
-        game.BW = base_bw * bw_scale
-        game.F = base_f * f_scale
+        game.BW = int(base_bw * bw_scale)
+        game.F = int(base_f * f_scale)
         game.bn = game.bn * load_scale
         game.lambda_n = game.lambda_n * load_scale
         game.t_max = game.t_max * tmax_scale
 
         reward, _, bn, lumbda, rff = game.step(actions=iteration_actions)
+        reward = np.nan_to_num(reward, nan=-1e6, posinf=-1e6, neginf=-1e6)
         reward_trace.append(float(np.mean(reward)))
 
         for i in range(user_num):
             q_history[i].append(q_array[i])
 
-        if gpd_estimator is not None and episode % args.gpd_update_interval == 0 and episode != 0:
+        if (
+            gpd_estimator is not None
+            and episode % args.gpd_update_interval == 0
+            and episode >= args.gpd_min_episode_for_update
+        ):
             for i in range(user_num):
+                if len(q_history[i]) < args.gpd_min_episode_for_update:
+                    continue
                 res = gpd_estimator.gpd(q_history[i], queue_relay_array[i].q0, i)
                 if res:
-                    queue_relay_array[i].GPD1 = float(res[0][0])
-                    queue_relay_array[i].GPD2 = float(res[0][1])
-                    queue_relay_array[i].updateM1()
-                    queue_relay_array[i].updateM2()
+                    new_gpd1 = float(res[0][0])
+                    new_gpd2 = float(res[0][1])
+                    if valid_gpd_params(new_gpd1, new_gpd2):
+                        queue_relay_array[i].GPD1 = new_gpd1
+                        queue_relay_array[i].GPD2 = new_gpd2
+                        queue_relay_array[i].updateM1()
+                        queue_relay_array[i].updateM2()
 
         model_last_delay = getattr(game, "last_delay", None)
         if model_last_delay is not None:

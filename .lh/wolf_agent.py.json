@@ -1,0 +1,18 @@
+{
+    "sourceFile": "wolf_agent.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1774412844296,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1774412844296,
+            "name": "Commit-0",
+            "content": "import numpy as np\n\n\nclass WoLFAgent():\n    \"\"\"\n        Policy hill-climbing algorithm(PHC)\n        http://www.cs.cmu.edu/~mmv/papers/01ijcai-mike.pdf\n    \"\"\"\n\n    def __init__(self, alpha=0.1, delta=0.0001, actions=None, high_delta=0.005, low_delta=0.001, epsilon=0.02):\n\n        self.alpha = alpha\n        self.actions = actions\n        self.last_action_id = None\n        self.q_values = self._init_q_values()\n        self.pi = [(1.0 / len(actions)) for idx in range(len(actions))]\n        self.pi_average = [(1.0 / len(actions)) for idx in range(len(actions))]\n        self.high_delta = high_delta\n        self.row_delta = low_delta\n        self.epsilon = epsilon\n\n        self.pi_history = [self.pi[0]]\n        self.reward_history = []\n        self.conter = 0\n\n    def _init_q_values(self):\n        q_values = {}\n        q_values = np.repeat(0.0, len(self.actions))\n        return q_values\n\n    def act(self, q_values=None):\n        tsum = 0.\n        for i in range(len(self.pi)):\n            tsum += self.pi[i]\n        for i in range(len(self.pi)):\n            self.pi[i] = self.pi[i] / tsum\n        if np.random.rand() < self.epsilon:\n            action_id = np.random.choice(np.arange(len(self.pi)))\n        else:\n            action_id = np.random.choice(np.arange(len(self.pi)), p=self.pi)\n        self.last_action_id = action_id\n        action = self.actions[action_id]\n        return action\n\n    def observe(self, reward):\n        self.reward_history.append(reward)\n        self.q_values[self.last_action_id] = ((1.0 - self.alpha) * self.q_values[self.last_action_id]) + (\n                    self.alpha * reward)\n        self._update_pi_average()\n        self._update_pi()\n\n    def _update_pi_average(self):\n        self.conter += 1\n        for aidx, _ in enumerate(self.pi):\n            self.pi_average[aidx] = self.pi_average[aidx] + (1 / self.conter) * (self.pi[aidx] - self.pi_average[aidx])\n            if self.pi_average[aidx] > 1: self.pi_average[aidx] = 1\n            if self.pi_average[aidx] < 0: self.pi_average[aidx] = 0\n\n    def _update_pi(self):\n        delta = self.decide_delta()\n        max_q = np.max(self.q_values)\n        max_candidates = np.where(np.isclose(self.q_values, max_q))[0]\n        max_action_id = np.random.choice(max_candidates)\n        for aidx, _ in enumerate(self.pi):\n            if aidx == max_action_id:\n                update_amount = delta\n            else:\n                update_amount = ((-delta) / (len(self.actions) - 1))\n            self.pi[aidx] = self.pi[aidx] + update_amount\n            if self.pi[aidx] > 1: self.pi[aidx] = 1\n            if self.pi[aidx] < 0: self.pi[aidx] = 0\n        self.pi_history.append(self.pi[0])\n\n    def decide_delta(self):\n        \"\"\"\n            comfirm win or lose \n        \"\"\"\n        expected_value = 0\n        expected_value_average = 0\n        for aidx, _ in enumerate(self.pi):\n            expected_value += self.pi[aidx] * self.q_values[aidx]\n            expected_value_average += self.pi_average[aidx] * self.q_values[aidx]\n\n        if expected_value > expected_value_average:  # win\n            return self.row_delta\n        else:  # lose\n            return self.high_delta\n"
+        }
+    ]
+}

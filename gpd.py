@@ -13,7 +13,6 @@ class GPD:
     def __init__(self)   :
         self.engine = matlab.engine.start_matlab()  # Start MATLAB process
         self.PARA = [[[], []] for i in range(10)]
-        print("start GPD")
 
     def _ensure_para_size(self, index):
         while len(self.PARA) <= index:
@@ -40,7 +39,6 @@ class GPD:
                 temp.append(max(mid))
             # print(mid)
             left += slice
-        print("temp",len( temp))
         if not temp:
             return
         temp = matlab.double(temp)

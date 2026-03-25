@@ -7,7 +7,7 @@ class WoLFAgent():
         http://www.cs.cmu.edu/~mmv/papers/01ijcai-mike.pdf
     """
 
-    def __init__(self, alpha=0.1, delta=0.0001, actions=None, high_delta=0.005, low_delta=0.001):
+    def __init__(self, alpha=0.1, delta=0.0001, actions=None, high_delta=0.005, low_delta=0.001, epsilon=0.02):
 
         self.alpha = alpha
         self.actions = actions
@@ -17,6 +17,7 @@ class WoLFAgent():
         self.pi_average = [(1.0 / len(actions)) for idx in range(len(actions))]
         self.high_delta = high_delta
         self.row_delta = low_delta
+        self.epsilon = epsilon
 
         self.pi_history = [self.pi[0]]
         self.reward_history = []
@@ -33,7 +34,10 @@ class WoLFAgent():
             tsum += self.pi[i]
         for i in range(len(self.pi)):
             self.pi[i] = self.pi[i] / tsum
-        action_id = np.random.choice(np.arange(len(self.pi)), p=self.pi)
+        if np.random.rand() < self.epsilon:
+            action_id = np.random.choice(np.arange(len(self.pi)))
+        else:
+            action_id = np.random.choice(np.arange(len(self.pi)), p=self.pi)
         self.last_action_id = action_id
         action = self.actions[action_id]
         return action
@@ -54,7 +58,9 @@ class WoLFAgent():
 
     def _update_pi(self):
         delta = self.decide_delta()
-        max_action_id = np.argmax(self.q_values)
+        max_q = np.max(self.q_values)
+        max_candidates = np.where(np.isclose(self.q_values, max_q))[0]
+        max_action_id = np.random.choice(max_candidates)
         for aidx, _ in enumerate(self.pi):
             if aidx == max_action_id:
                 update_amount = delta

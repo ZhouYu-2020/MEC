@@ -3,7 +3,22 @@ import random
 
 class MatrixGame():
 
-    def __init__(self, actions, Q ,Qx ,Qy, Qz, M1, M2, BW, reward_mode="energy"):
+    def __init__(
+        self,
+        actions,
+        Q,
+        Qx,
+        Qy,
+        Qz,
+        M1,
+        M2,
+        BW,
+        reward_mode="energy",
+        lyap_constraint_weight=1.0,
+        lyap_energy_weight=1.0,
+        lyap_constraint_scale=1e25,
+        lyap_energy_scale=1e25,
+    ):
         self.Q = Q  # 任务等待队列
         self.Qx = Qx  # 虚拟队列Qx
         self.Qy = Qy  # 虚拟队列Qy
@@ -14,6 +29,10 @@ class MatrixGame():
         self.num_ue = len(actions)
         self.BW = BW                  # BW =10MHz    带宽
         self.reward_mode = reward_mode
+        self.lyap_constraint_weight = lyap_constraint_weight
+        self.lyap_energy_weight = lyap_energy_weight
+        self.lyap_constraint_scale = lyap_constraint_scale
+        self.lyap_energy_scale = lyap_energy_scale
         self.F = 10 * pow(10, 9)                    # F =10Ghz     MEC 计算能力
         self.V = 4 * pow(10, 27)                    # V =4 (Mbits)^2/J   李雅普诺夫权衡参数
         self.tau = pow(10, -2)                      # 时隙τ，1ms
@@ -35,6 +54,7 @@ class MatrixGame():
                              [1, 0, 0.5],
                              [1, 0, 1],
                              [1, 0, 2]]
+
         # self.bn = np.random.uniform(3000, 5000, size=self.num_ue)   # 输入量 kbits    #生成num_ue个数的【300，500】浮点数的数值
         # self.dn = np.random.uniform(70, 800, size=self.num_ue)
 
@@ -128,14 +148,10 @@ class MatrixGame():
         pr_Q = 0
         tsum = 0
         reward = np.zeros(self.num_ue)
-        cost_local = 0
         cost_local_record = np.zeros(self.num_ue)
 
-        cost_ser = 0
-        cost_ser1 = 0
-        cost_ser2 = 0
-        rw = [0 for _ in range(self.num_ue)] 
-        rf = [0 for _ in range(self.num_ue)]
+        rw = [0.0 for _ in range(self.num_ue)]
+        rf = [0.0 for _ in range(self.num_ue)]
         vn = np.zeros(self.num_ue)
 
         for i in range(self.num_ue):
@@ -143,6 +159,10 @@ class MatrixGame():
             pr_Q += self.pr_n[i] * (1 if self.Q[i] > 0 else 0)                   # 分配到的mec资源比例公式的分母
 
         for i in range(self.num_ue):
+            cost_local = 0.0
+            cost_ser = 0.0
+            cost_ser1 = 0.0
+            cost_ser2 = 0.0
 
             if actions[i] < 4:  # 任务选择本地执行
                 self.t_local = self.bn[i] * self.dn[i] / self.action_space[actions[i]][1]      # 本地时延f_local=self.action_space[actions[i]][1]
@@ -152,10 +172,16 @@ class MatrixGame():
                 #print('local cost', cost_local)
 
             else:  # action[i]>=4 即4,5,6,7 任务选择卸载执行
-                rw[i] = (self.BW * self.pr_n[i]) / theta_pr  
-                vn[i] = rw[i] * np.log2(1 + (self.g0 * self.action_space[actions[i]][2] /
-                                                    (self.N0 * rw[i])) - pow(10, -5))           # 传输速率
-                cost_ser1 =  self.action_space[actions[i]][2] * self.bn[i]/ vn[i]
+                rw[i] = (self.BW * self.pr_n[i]) / theta_pr if theta_pr > 0 else 0.0
+                if rw[i] > 0:
+                    snr_term = 1 + (self.g0 * self.action_space[actions[i]][2] / (self.N0 * rw[i])) - pow(10, -5)
+                    if snr_term > 0:
+                        vn[i] = rw[i] * np.log2(snr_term)
+                if vn[i] > 0 and np.isfinite(vn[i]):
+                    cost_ser1 = self.action_space[actions[i]][2] * self.bn[i] / vn[i]
+                else:
+                    # Penalize numerically invalid offloading decisions.
+                    cost_ser1 = 1e6
                 # print('upload energy1', cost_ser1)
                 if self.F * (self.pr_n[i] * (1 if self.Q[i] > 0 else 0)) == 0 and  pr_Q == 0: # 传输能耗公式第一部分
                     rf[i] = 0
@@ -171,10 +197,15 @@ class MatrixGame():
                 #print('cost_ser', cost_ser)
             tsum = self.bn[i] * self.action_space[actions[i]][0] * ((1 + self.Qx[i] -self.q0 * self.lambda_n[i]) * self.Q[i] - self.Qx[i] * self.lambda_n[i]+ (2 * (self.Q[i] - self.q0) * (self.Qz[i] + (self.Q[i] - self.q0) * (self.Q[i] - self.q0) - self.M2[i]) + self.Q[i] + self.Qy[i] - self.M1[i])* (1 if self.Q[i] > self.q0 else 0))
             if self.reward_mode == "lyapunov":
-                lyapunov_term = (tsum / (10 ** 25)) + (self.V * (cost_ser + cost_local) / (10 ** 25))
-                reward[i] = -lyapunov_term
+                c_scale = max(float(self.lyap_constraint_scale), 1.0)
+                e_scale = max(float(self.lyap_energy_scale), 1.0)
+                constraint_term = self.lyap_constraint_weight * (tsum / c_scale)
+                energy_term = self.lyap_energy_weight * (self.V * (cost_ser + cost_local) / e_scale)
+                lyapunov_term = constraint_term + energy_term
+                reward[i] = -lyapunov_term if np.isfinite(lyapunov_term) else -1e6
             else:
-                reward[i] = - (cost_ser + cost_local)
+                raw_reward = - (cost_ser + cost_local)
+                reward[i] = raw_reward if np.isfinite(raw_reward) else -1e6
             cost_local_record[i] = cost_local
 
 
