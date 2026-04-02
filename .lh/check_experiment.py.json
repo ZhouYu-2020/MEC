@@ -1,0 +1,18 @@
+{
+    "sourceFile": "check_experiment.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775115402141,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775115402141,
+            "name": "Commit-0",
+            "content": "import pandas as pd\r\nimport numpy as np\r\n\r\ndf = pd.read_csv('new_simulation/results_paper_c5_balanced_quick_c6new_20260402/stress_scan_raw.csv')\r\n\r\n# Check configuration\r\nprint('=== EXPERIMENT CONFIGURATION ===')\r\nprint(f'Episodes per run: {df[\"episodes\"].iloc[0]}')\r\nprint(f'Warmup ratio: {df[\"warmup_ratio\"].iloc[0]}')\r\neffective = int(df['episodes'].iloc[0] * (1 - df['warmup_ratio'].iloc[0]))\r\nprint(f'Effective episodes for metrics: {effective}')\r\nprint(f'Number of unique seeds: {df[\"seed\"].nunique()}')\r\nprint(f'Seeds used: {sorted(df[\"seed\"].unique())}')\r\n\r\n# Check Stand-alone MEC variability\r\nprint('\\n=== STAND-ALONE MEC Analysis ===')\r\nsam = df[df['policy'] == 'Stand-alone MEC']\r\nprint(f'Total Stand-alone MEC rows: {len(sam)}')\r\n\r\nuser_num_sam = sam[sam['scenario']=='user_num'].sort_values(['value','seed'])\r\nprint('\\nStand-alone MEC results for user_num scenario:')\r\nprint(user_num_sam[['value','seed','p_c6_viol','p_c7_viol','p_c8_viol']].to_string())\r\n\r\n# Check variability across all policies\r\nprint('\\n=== SEED VARIABILITY (stddev) ===')\r\nprint('Policy,Avg_STD,Min_STD,Max_STD')\r\nfor policy in ['Full', 'IQL', 'Stand-alone MEC', 'Random']:\r\n    subset = df[df['policy']==policy]\r\n    grouped = subset.groupby(['scenario','value'])['p_c6_viol'].std()\r\n    avg_std = grouped.mean()\r\n    print(f'{policy},{avg_std:.6f},{grouped.min():.6f},{grouped.max():.6f}')\r\n\r\n# Check determinism of Stand-alone MEC\r\nprint('\\n=== DETERMINISM CHECK (are seed results identical?) ===')\r\nsam_pivot = df[df['policy']=='Stand-alone MEC'].pivot_table(\r\n    index=['scenario','value'],\r\n    columns='seed',\r\n    values='p_c6_viol'\r\n)\r\nsam_pivot['identical'] = (sam_pivot[1] == sam_pivot[2]).astype(int)\r\nprint(f'Identical seed results: {sam_pivot[\"identical\"].sum()} / {len(sam_pivot)}')\r\nsam_pivot['diff'] = abs(sam_pivot[1] - sam_pivot[2])\r\nprint(f'Max difference: {sam_pivot[\"diff\"].max():.10f}')\r\nprint(f'Avg difference: {sam_pivot[\"diff\"].mean():.10f}')\r\n\r\n# Compare with other policies\r\nprint('\\n=== VARIABILITY COMPARISON ===')\r\nfor policy in ['Full', 'IQL', 'Stand-alone MEC', 'Random']:\r\n    subset = df[df['policy']==policy]\r\n    pivot = subset.pivot_table(\r\n        index=['scenario','value'],\r\n        columns='seed',\r\n        values='p_c6_viol'\r\n    )\r\n    pivot['diff'] = abs(pivot[1] - pivot[2])\r\n    print(f'{policy:20s}: max_diff={pivot[\"diff\"].max():.10f}, avg_diff={pivot[\"diff\"].mean():.10f}')\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "analyze_improved_exp.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775115402150,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775115402150,
+            "name": "Commit-0",
+            "content": "import pandas as pd\r\n\r\ndf = pd.read_csv('new_simulation/results_paper_c5_balanced_1000ep_3seed/stress_scan_raw.csv')\r\nprint('=== 1000 Episodes + 3 Seeds Configuration ===')\r\nprint('Episodes per run:', df['episodes'].iloc[0])\r\nprint('Warmup ratio:', df['warmup_ratio'].iloc[0])\r\neff = int(df['episodes'].iloc[0] * (1 - df['warmup_ratio'].iloc[0]))\r\nprint('Effective episodes for metrics:', eff)\r\nprint('Number of unique seeds:', df['seed'].nunique())\r\nprint('Seeds used:', sorted(df['seed'].unique()))\r\nprint()\r\nprint('=== Variability Improvements (vs old 2-seed version) ===')\r\nprint('Policy,Avg_STD (new),Min,Max')\r\nfor policy in ['Full', 'IQL', 'Stand-alone MEC', 'Random', 'C6-Only']:\r\n    subset = df[df['policy']==policy]\r\n    if len(subset) == 0:\r\n        continue\r\n    grouped = subset.groupby(['scenario','value'])['p_c6_viol'].std()\r\n    avg_std = grouped.mean()\r\n    print('{:20s}: {:.8f}, {:.8f}, {:.8f}'.format(policy, avg_std, grouped.min(), grouped.max()))\r\n    \r\n# Compare with old results\r\nprint('\\n=== Comparison with 2-seed version ===')\r\ndf_old = pd.read_csv('new_simulation/results_paper_c5_balanced_quick_c6new_20260402/stress_scan_raw.csv')\r\nfor policy in ['Full', 'Stand-alone MEC']:\r\n    subset_old = df_old[df_old['policy']==policy]\r\n    grouped_old = subset_old.groupby(['scenario','value'])['p_c6_viol'].std()\r\n    avg_std_old = grouped_old.mean()\r\n    \r\n    subset_new = df[df['policy']==policy]\r\n    grouped_new = subset_new.groupby(['scenario','value'])['p_c6_viol'].std()\r\n    avg_std_new = grouped_new.mean()\r\n    \r\n    improvement = (avg_std_new - avg_std_old) / (avg_std_old + 1e-10) * 100\r\n    print('{:20s}: old={:.8f}, new={:.8f}, change={:+.1f}%'.format(\r\n        policy, avg_std_old, avg_std_new, improvement))\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "STRATEGY_EXPLANATION.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775115402142,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775115402142,
+            "name": "Commit-0",
+            "content": "## Stand-alone MEC & Non-MEC 策略解析\r\n\r\n### 两者都是**固定baselines**（不是学习策略）\r\n\r\n1. **Non-MEC** (action=3): 所有任务都在**本地设备**处理\r\n   ```python\r\n   act = [3 for _ in range(env.user_num)]\r\n   ```\r\n   - 永远不使用MEC卸载\r\n   - 用来对比：本地处理 vs MEC卸载\r\n\r\n2. **Stand-alone MEC** (action=6): 所有任务**完全卸载到MEC**\r\n   ```python\r\n   act = [6 for _ in range(env.user_num)]\r\n   ```\r\n   - 永远充分利用MEC\r\n   - 用来对比：完全卸载 vs 学习最优策略\r\n\r\n### 为什么它们都是极端策略？\r\n\r\n这是**设计意图**——它们是baselines来：\r\n- 展示极端情况下的性能\r\n- 说明学习策略（Full/IQL）相对于baselines的改进幅度\r\n\r\n### 为什么仍然有不同的结果（despite相同的action）？\r\n\r\n即使action相同，不同的seed会导致不同的结果，因为系统的随机性：\r\n- **任务到达时间** 随机\r\n- **卸载延迟** 随机\r\n- **计算时间** 随机  \r\n- **队列动态** 随机\r\n\r\n### 现状的问题\r\n\r\n❌ 只有2个seed，无法充分展现这些随机性的影响\r\n❌ 150个有效episode，样本量太小\r\n→ 误差棒太小（标准差接近0）\r\n\r\n### 改进方案\r\n\r\n✅ 增加到1000 episodes + 3 seeds → **会看到更多变异**\r\n"
+        }
+    ]
+}

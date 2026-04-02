@@ -1,0 +1,18 @@
+{
+    "sourceFile": "new_simulation/tune_full_user40.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775098995988,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775098995988,
+            "name": "Commit-0",
+            "content": "import argparse\r\nimport os\r\nimport sys\r\nfrom statistics import mean\r\n\r\nCURRENT_DIR = os.path.dirname(os.path.abspath(__file__))\r\nPROJECT_ROOT = os.path.dirname(CURRENT_DIR)\r\nif PROJECT_ROOT not in sys.path:\r\n    sys.path.insert(0, PROJECT_ROOT)\r\n\r\nfrom new_simulation.sim_core import EnvConfig, SimConfig, get_policy_variants, run_policy_once\r\n\r\n\r\ndef parse_list(text: str):\r\n    return [float(x.strip()) for x in text.split(\",\") if x.strip()]\r\n\r\n\r\ndef main():\r\n    p = argparse.ArgumentParser()\r\n    p.add_argument(\"--episodes\", type=int, default=400)\r\n    p.add_argument(\"--warmup_ratio\", type=float, default=0.7)\r\n    p.add_argument(\"--seeds\", type=str, default=\"1,2,3\")\r\n    p.add_argument(\"--bw_list\", type=str, default=\"1e7,2e7,5e7,1e8,2e8\")\r\n    p.add_argument(\"--f_list\", type=str, default=\"1e10,2e10,5e10,1e11\")\r\n    p.add_argument(\"--target\", type=float, default=0.2)\r\n    args = p.parse_args()\r\n\r\n    seeds = [int(x.strip()) for x in args.seeds.split(\",\") if x.strip()]\r\n    bw_list = parse_list(args.bw_list)\r\n    f_list = parse_list(args.f_list)\r\n\r\n    full = [x for x in get_policy_variants() if x[\"name\"] == \"Full\"][0]\r\n    env = EnvConfig(user_num=40, load_scale=1.0, bw_scale=1.0, f_scale=1.0, tmax_scale=1.0)\r\n\r\n    best = None\r\n    for bw in bw_list:\r\n        for f in f_list:\r\n            sim = SimConfig(\r\n                episodes=args.episodes,\r\n                warmup_ratio=args.warmup_ratio,\r\n                gpd_update_interval=100,\r\n                gpd_min_episode_for_update=150,\r\n                lyap_constraint_weight=20.0,\r\n                lyap_energy_weight=1.0,\r\n                lyap_constraint_scale=1e24,\r\n                lyap_energy_scale=1e25,\r\n                wolf_epsilon=0.1,\r\n                c5_penalty_weight=20.0,\r\n                c5_penalty_scale=1.0,\r\n                mec_bw_base=bw,\r\n                mec_f_base=f,\r\n            )\r\n\r\n            rows = [run_policy_once(full, env, sim, sd, gpd_estimator=None) for sd in seeds]\r\n            p6 = mean(r[\"p_c6_viol\"] for r in rows)\r\n            p7 = mean(r[\"p_c7_viol\"] for r in rows)\r\n            p8 = mean(r[\"p_c8_viol\"] for r in rows)\r\n            score = max(p6, p7, p8)\r\n            print(f\"bw={bw:.3e}, f={f:.3e}, p6={p6:.3f}, p7={p7:.3f}, p8={p8:.3f}, max={score:.3f}\")\r\n\r\n            if best is None or score < best[\"score\"]:\r\n                best = {\"bw\": bw, \"f\": f, \"p6\": p6, \"p7\": p7, \"p8\": p8, \"score\": score}\r\n\r\n    print(\"BEST:\", best)\r\n    if best[\"score\"] <= args.target:\r\n        print(\"TARGET_MET\")\r\n    else:\r\n        print(\"TARGET_NOT_MET\")\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "sourceFile": "new_simulation/README.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1774508515876,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1774508515876,
+            "name": "Commit-0",
+            "content": "# New Simulation Suite\r\n\r\nThis folder contains a redesigned experiment suite built on the same solving logic as the paper and current MEC codebase.\r\n\r\n## 1) Current MEC Running Logic (How the project works)\r\n\r\nThe original code follows this loop per time slot:\r\n\r\n1. Each UE agent (`WoLFAgent`) selects one action from 8 discrete actions.\r\n2. `MatrixGame` computes reward for each UE:\r\n   - local/offload energy cost,\r\n   - Lyapunov-based constraint penalty terms from real queue `Q` and virtual queues (`Qx`, `Qy`, `Qz`).\r\n3. `QueueRelay` updates queue states (`Q`, `Qx`, `Qy`, `Qz`) using arrivals/service.\r\n4. Optional GPD update refreshes tail parameters (`GPD1`, `GPD2`) for C7/C8 bounds.\r\n5. Agents observe reward and update policy.\r\n\r\nAfter warmup episodes, metrics are estimated:\r\n- C6/C7/C8 violation probabilities,\r\n- energy,\r\n- offload ratio,\r\n- action selection ratios.\r\n\r\n## 2) New Experiment Design\r\n\r\n### Experiment A: Stress Scan (`stress_scan_*`)\r\nScan the environment stress along three axes:\r\n- `load_scale`\r\n- `f_scale` (MEC CPU scale)\r\n- `user_num`\r\n\r\nCompare policy variants:\r\n- `Full` (EVT + Lyapunov + WoLF-PHC)\r\n- `IQL` (replace WoLF dual-rate update by same-rate learning)\r\n- `No-EVT` (remove EVT constraints, keep learning)\r\n- `Lyapunov-Greedy` (no RL, delay-first greedy scheduler)\r\n- `Non-MEC` (all-local)\r\n- `Stand-alone MEC` (all-offload)\r\n- `Random`\r\n\r\nOutputs include energy + C6/C7/C8 + offload/action behavior.\r\n\r\nNew in this version:\r\n- C5 delay reliability is explicitly tracked as `p_c5_viol` and `mean_c5_excess_ratio`.\r\n- A C5 safety shield is applied before execution, and C5 excess is also penalized in reward.\r\n\r\n### Experiment B: Constraint-Weight Sweep (`weight_sweep_*`)\r\nFix environment and sweep Lyapunov constraint weight:\r\n- `[1, 2, 5, 10, 20, 40]`\r\n\r\nObserve trade-off among:\r\n- C6/C7/C8 violation,\r\n- total energy,\r\n- offload ratio.\r\n\r\n## 3) Files\r\n\r\n- `sim_core.py`: reusable simulation core\r\n- `run_new_experiments.py`: run experiments and save CSV results\r\n- `plot_new_experiments.py`: draw figures from result CSVs\r\n- `results/`: CSV outputs\r\n- `figures/`: plotted figures\r\n\r\n## 4) Run\r\n\r\nFrom project root (`MEC`):\r\n\r\n```powershell\r\npython new_simulation/run_new_experiments.py --episodes 300 --warmup_ratio 0.6 --seeds 1,2\r\npython new_simulation/plot_new_experiments.py --results_dir new_simulation/results --figures_dir new_simulation/figures\r\n```\r\n\r\nFor a paper-level run, increase episodes/seeds, e.g.:\r\n\r\n```powershell\r\npython new_simulation/run_new_experiments.py --episodes 2000 --warmup_ratio 0.7 --seeds 1,2,3,4,5\r\n```\r\n\r\nOptional GPD online update:\r\n\r\n```powershell\r\npython new_simulation/run_new_experiments.py --enable_gpd\r\n\r\nTune C5 penalty strength:\r\n\r\n```powershell\r\npython new_simulation/run_new_experiments.py --c5_penalty_weight 20 --c5_penalty_scale 1\r\n```\r\n```\r\n\r\n## 5) Notes\r\n\r\n- `Full` may overlap with some ablation variants in low-stress regions, which is expected when constraints are not active.\r\n- In plotting, `Full` is drawn last and thicker so it remains visible under overlap.\r\n"
+        }
+    ]
+}

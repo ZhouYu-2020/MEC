@@ -1,0 +1,58 @@
+scenario,value,policy,seed,dup_count,c6_values,c7_values,c8_values
+user_num,30.0,Full,4,2,0|1,0|1,0|0.9
+user_num,30.0,Full,5,2,0|1,0|1,0|0.933333
+user_num,30.0,IQL,1,2,0|0.966667,0|0.833333,0|0.766667
+user_num,30.0,IQL,2,2,0|1,0|0.866667,0|0.8
+user_num,30.0,IQL,3,2,0|1,0|0.833333,0|0.8
+user_num,30.0,IQL,4,2,0|0.966667,0|0.833333,0|0.8
+user_num,30.0,IQL,5,2,0|0.966667,0|0.8,0|0.766667
+user_num,30.0,No-EVT,1,2,0|1,0|1,0|0.833333
+user_num,30.0,No-EVT,2,2,0|1,0|0.933333,0|0.8
+user_num,30.0,No-EVT,3,2,0|1,0|0.933333,0|0.933333
+user_num,30.0,No-EVT,4,2,0|1,0|1,0|0.966667
+user_num,30.0,No-EVT,5,2,0|1,0|0.966667,0|0.933333
+user_num,30.0,Stand-alone MEC,1,2,0|1,0|1,0|1
+user_num,30.0,Stand-alone MEC,2,2,0|1,0|1,0|1
+user_num,30.0,Stand-alone MEC,3,2,0|1,0|1,0|1
+user_num,30.0,Stand-alone MEC,4,2,0|1,0|1,0|1
+user_num,30.0,Stand-alone MEC,5,2,0|1,0|1,0|1
+user_num,35.0,Full,1,2,0|1,0|1,0|0.828571
+user_num,35.0,Full,2,2,0|1,0|1,0|0.885714
+user_num,35.0,Full,3,2,0|1,0|0.971429,0|0.771429
+user_num,35.0,Full,4,2,0|1,0|1,0|0.914286
+user_num,35.0,Full,5,2,0|1,0|0.942857,0|0.8
+user_num,35.0,IQL,1,2,0|0.971429,0|0.828571,0|0.771429
+user_num,35.0,IQL,2,2,0|1,0|0.828571,0|0.742857
+user_num,35.0,IQL,3,2,0|0.971429,0|0.828571,0|0.8
+user_num,35.0,IQL,4,2,0|1,0|0.885714,0|0.771429
+user_num,35.0,IQL,5,2,0|1,0|0.857143,0|0.8
+user_num,35.0,No-EVT,1,2,0|1,0|1,0|1
+user_num,35.0,No-EVT,2,2,0|1,0|0.971429,0|0.914286
+user_num,35.0,No-EVT,3,2,0|0.971429,0|0.942857,0|0.828571
+user_num,35.0,No-EVT,4,2,0|1,0|1,0|0.914286
+user_num,35.0,No-EVT,5,2,0|1,0|0.971429,0|0.828571
+user_num,35.0,Stand-alone MEC,1,2,0|1,0|1,0|1
+user_num,35.0,Stand-alone MEC,2,2,0|1,0|1,0|1
+user_num,35.0,Stand-alone MEC,3,2,0|1,0|1,0|1
+user_num,35.0,Stand-alone MEC,4,2,0|1,0|1,0|1
+user_num,35.0,Stand-alone MEC,5,2,0|1,0|1,0|1
+user_num,40.0,Full,1,2,0|1,0|0.925,0|0.875
+user_num,40.0,Full,2,2,0|1,0|0.975,0|0.825
+user_num,40.0,Full,3,2,0|1,0|0.95,0|0.875
+user_num,40.0,Full,4,2,0|1,0|0.95,0|0.825
+user_num,40.0,Full,5,2,0|1,0|0.975,0|0.9
+user_num,40.0,IQL,1,2,0|0.975,0|0.85,0|0.725
+user_num,40.0,IQL,2,2,0|1,0|0.8,0|0.725
+user_num,40.0,IQL,3,2,0|1,0|0.775,0|0.725
+user_num,40.0,IQL,4,2,0|0.975,0|0.85,0|0.8
+user_num,40.0,IQL,5,2,0|1,0|0.825,0|0.8
+user_num,40.0,No-EVT,1,2,0|1,0|1,0|0.9
+user_num,40.0,No-EVT,2,2,0|1,0|0.975,0|0.85
+user_num,40.0,No-EVT,3,2,0|1,0|0.925,0|0.85
+user_num,40.0,No-EVT,4,2,0|1,0|0.975,0|0.875
+user_num,40.0,No-EVT,5,2,0|1,0|1,0|0.9
+user_num,40.0,Stand-alone MEC,1,2,0|1,0|1,0|1
+user_num,40.0,Stand-alone MEC,2,2,0|1,0|1,0|1
+user_num,40.0,Stand-alone MEC,3,2,0|1,0|1,0|1
+user_num,40.0,Stand-alone MEC,4,2,0|1,0|1,0|1
+user_num,40.0,Stand-alone MEC,5,2,0|1,0|1,0|1

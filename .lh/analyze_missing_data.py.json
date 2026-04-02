@@ -1,0 +1,18 @@
+{
+    "sourceFile": "analyze_missing_data.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775117147777,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775117147777,
+            "name": "Commit-0",
+            "content": "import pandas as pd\r\n\r\nprint('=== DETAILED MISSING DATA ANALYSIS ===')\r\nprint()\r\n\r\ndf = pd.read_csv('new_simulation/results_paper_c5_balanced_1000ep_3seed/stress_scan_raw.csv')\r\n\r\nprint('Completed load_scale section:')\r\nload = df[df['scenario']=='load_scale']\r\nfor val in [0.5, 1.0, 1.5, 2.0]:\r\n    subset = load[load['value']==val]\r\n    print(f'  value={val}: {len(subset)} rows (should be 24 = 8 policies × 3 seeds)')\r\nprint()\r\n\r\nprint('Incomplete f_scale section:')\r\nfscale = df[df['scenario']=='f_scale']\r\nprint(f'  0.4: {len(fscale[fscale[\"value\"]==0.4])} rows')\r\nprint(f'  0.6: {len(fscale[fscale[\"value\"]==0.6])} rows (INCOMPLETE - should be 24 but is only 3!)')\r\nprint()\r\n\r\nprint('Last few entries before experiment stopped:')\r\nlast_rows = fscale[['value','policy','seed']].sort_values(['value','policy','seed']).tail(15)\r\nprint(last_rows.to_string())\r\n\r\nprint()\r\nprint('=== ROOT CAUSE ===')\r\nprint('Experiment stopped after f_scale=0.6, policy=Full, seed=1 (first entry)')\r\nprint('This suggests the Full policy hit an error or infinite loop during episode execution')\r\nprint('Remaining scenarios never executed:')\r\nprint('  - f_scale: 0.8, 1.0, 1.2, 1.4')\r\nprint('  - user_num: all values (5-40)')\r\n"
+        }
+    ]
+}

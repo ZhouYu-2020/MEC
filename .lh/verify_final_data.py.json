@@ -1,0 +1,18 @@
+{
+    "sourceFile": "verify_final_data.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775117147777,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775117147777,
+            "name": "Commit-0",
+            "content": "import pandas as pd\r\nimport os\r\n\r\npath = 'new_simulation/results_500ep_seeds7_16_24_final/stress_scan_raw.csv'\r\nif os.path.exists(path):\r\n    df = pd.read_csv(path)\r\n    print(f'✓ Total rows: {len(df)}')\r\n    print(f'  Expected: ~432 (18 scenarios × 8 policies × 3 seeds)')\r\n    print()\r\n    \r\n    for scenario in ['load_scale', 'f_scale', 'user_num']:\r\n        subset = df[df['scenario']==scenario]\r\n        if len(subset) > 0:\r\n            values = sorted(subset['value'].unique())\r\n            policies = len(subset['policy'].unique())\r\n            seeds = len(subset['seed'].unique())\r\n            print(f'✓ {scenario}: {len(values)} 个值, {policies} 个策略, {seeds} 个 seed = {len(subset)} 行')\r\n        else:\r\n            print(f'✗ {scenario}: 缺失')\r\n    print()\r\n    print(f'✓ Seeds: {sorted(df[\"seed\"].unique())}')\r\n    print(f'✓ 策略数: {len(df[\"policy\"].unique())}')\r\n    print(f'✓ 完整覆盖: 是' if len(df) >= 400 else '✗ 数据不完整')\r\nelse:\r\n    print('✗ 文件未找到')\r\n"
+        }
+    ]
+}

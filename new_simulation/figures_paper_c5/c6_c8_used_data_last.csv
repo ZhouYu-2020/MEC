@@ -1,0 +1,99 @@
+scenario,value,policy,p_c6_viol_mean,p_c7_viol_mean,p_c8_viol_mean
+f_scale,0.4,Full,0.0,0.0,0.0
+f_scale,0.4,IQL,0.0,0.0,0.0
+f_scale,0.4,Lyapunov-Greedy,0.0,0.0,0.0
+f_scale,0.4,No-EVT,0.0,0.0,0.0
+f_scale,0.4,Non-MEC,0.0,0.0,0.0
+f_scale,0.4,Random,1.0,1.0,1.0
+f_scale,0.4,Stand-alone MEC,0.0,0.0,0.0
+f_scale,0.6,Full,0.0,0.0,0.0
+f_scale,0.6,IQL,0.0,0.0,0.0
+f_scale,0.6,Lyapunov-Greedy,0.0,0.0,0.0
+f_scale,0.6,No-EVT,0.0,0.0,0.0
+f_scale,0.6,Non-MEC,0.0,0.0,0.0
+f_scale,0.6,Random,1.0,1.0,1.0
+f_scale,0.6,Stand-alone MEC,0.0,0.0,0.0
+f_scale,0.8,Full,0.0,0.0,0.0
+f_scale,0.8,IQL,0.0,0.0,0.0
+f_scale,0.8,Lyapunov-Greedy,0.0,0.0,0.0
+f_scale,0.8,No-EVT,0.0,0.0,0.0
+f_scale,0.8,Non-MEC,0.0,0.0,0.0
+f_scale,0.8,Random,1.0,1.0,1.0
+f_scale,0.8,Stand-alone MEC,0.0,0.0,0.0
+f_scale,1.0,Full,0.0,0.0,0.0
+f_scale,1.0,IQL,0.0,0.0,0.0
+f_scale,1.0,Lyapunov-Greedy,0.0,0.0,0.0
+f_scale,1.0,No-EVT,0.0,0.0,0.0
+f_scale,1.0,Non-MEC,0.0,0.0,0.0
+f_scale,1.0,Random,1.0,1.0,1.0
+f_scale,1.0,Stand-alone MEC,0.0,0.0,0.0
+f_scale,1.2,Full,0.0,0.0,0.0
+f_scale,1.2,IQL,0.0,0.0,0.0
+f_scale,1.2,Lyapunov-Greedy,0.0,0.0,0.0
+f_scale,1.2,No-EVT,0.0,0.0,0.0
+f_scale,1.2,Non-MEC,0.0,0.0,0.0
+f_scale,1.2,Random,1.0,1.0,1.0
+f_scale,1.2,Stand-alone MEC,0.0,0.0,0.0
+f_scale,1.4,Full,0.0,0.0,0.0
+f_scale,1.4,IQL,0.0,0.0,0.0
+f_scale,1.4,Lyapunov-Greedy,0.0,0.0,0.0
+f_scale,1.4,No-EVT,0.0,0.0,0.0
+f_scale,1.4,Non-MEC,0.0,0.0,0.0
+f_scale,1.4,Random,1.0,1.0,1.0
+f_scale,1.4,Stand-alone MEC,0.0,0.0,0.0
+user_num,5.0,Full,0.0,0.0,0.0
+user_num,5.0,IQL,0.0,0.0,0.0
+user_num,5.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,5.0,No-EVT,0.0,0.0,0.0
+user_num,5.0,Non-MEC,0.0,0.0,0.0
+user_num,5.0,Random,1.0,1.0,1.0
+user_num,5.0,Stand-alone MEC,0.0,0.0,0.0
+user_num,10.0,Full,0.0,0.0,0.0
+user_num,10.0,IQL,0.0,0.0,0.0
+user_num,10.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,10.0,No-EVT,0.0,0.0,0.0
+user_num,10.0,Non-MEC,0.0,0.0,0.0
+user_num,10.0,Random,1.0,1.0,1.0
+user_num,10.0,Stand-alone MEC,0.0,0.0,0.0
+user_num,15.0,Full,0.0,0.0,0.0
+user_num,15.0,IQL,0.0,0.0,0.0
+user_num,15.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,15.0,No-EVT,0.0,0.0,0.0
+user_num,15.0,Non-MEC,0.0,0.0,0.0
+user_num,15.0,Random,1.0,1.0,1.0
+user_num,15.0,Stand-alone MEC,0.0,0.0,0.0
+user_num,20.0,Full,0.0,0.0,0.0
+user_num,20.0,IQL,0.0,0.0,0.0
+user_num,20.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,20.0,No-EVT,1.0,0.99,0.9
+user_num,20.0,Non-MEC,0.0,0.0,0.0
+user_num,20.0,Random,1.0,1.0,1.0
+user_num,20.0,Stand-alone MEC,1.0,1.0,1.0
+user_num,25.0,Full,1.0,0.952,0.88
+user_num,25.0,IQL,0.992,0.856,0.808
+user_num,25.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,25.0,No-EVT,1.0,0.976,0.888
+user_num,25.0,Non-MEC,0.0,0.0,0.0
+user_num,25.0,Random,1.0,1.0,1.0
+user_num,25.0,Stand-alone MEC,1.0,1.0,1.0
+user_num,30.0,Full,1.0,0.9533333333333334,0.8933333333333333
+user_num,30.0,IQL,0.98,0.8333333333333334,0.7866666666666667
+user_num,30.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,30.0,No-EVT,1.0,0.9666666666666667,0.8933333333333333
+user_num,30.0,Non-MEC,0.0,0.0,0.0
+user_num,30.0,Random,1.0,1.0,1.0
+user_num,30.0,Stand-alone MEC,1.0,1.0,1.0
+user_num,35.0,Full,1.0,0.9828571428571429,0.84
+user_num,35.0,IQL,0.9885714285714285,0.8457142857142858,0.7771428571428571
+user_num,35.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,35.0,No-EVT,0.9942857142857143,0.9771428571428571,0.8971428571428571
+user_num,35.0,Non-MEC,0.0,0.0,0.0
+user_num,35.0,Random,1.0,1.0,1.0
+user_num,35.0,Stand-alone MEC,1.0,1.0,1.0
+user_num,40.0,Full,1.0,0.955,0.86
+user_num,40.0,IQL,0.99,0.82,0.755
+user_num,40.0,Lyapunov-Greedy,0.0,0.0,0.0
+user_num,40.0,No-EVT,1.0,0.975,0.875
+user_num,40.0,Non-MEC,0.0,0.0,0.0
+user_num,40.0,Random,1.0,1.0,1.0
+user_num,40.0,Stand-alone MEC,1.0,1.0,1.0

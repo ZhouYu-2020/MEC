@@ -1,0 +1,18 @@
+{
+    "sourceFile": "check_data_complete.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775117147776,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775117147776,
+            "name": "Commit-0",
+            "content": "import pandas as pd\r\nimport os\r\n\r\npath = 'new_simulation/results_1000ep_seeds7_16_24/stress_scan_raw.csv'\r\nif os.path.exists(path):\r\n    df = pd.read_csv(path)\r\n    print(f'✓ Total rows: {len(df)}')\r\n    print(f'  Expected: ~432 (18 scenarios × 8 policies × 3 seeds)')\r\n    print()\r\n    print('Scenario coverage:')\r\n    for scenario in ['load_scale', 'f_scale', 'user_num']:\r\n        subset = df[df['scenario']==scenario]\r\n        if len(subset) > 0:\r\n            values = sorted(subset['value'].unique())\r\n            policies = len(subset['policy'].unique())\r\n            seeds = len(subset['seed'].unique())\r\n            print(f'  ✓ {scenario}: {len(values)} values, {policies} policies, {seeds} seeds = {len(subset)} rows')\r\n        else:\r\n            print(f'  ✗ {scenario}: MISSING')\r\n    print()\r\n    seeds_list = sorted(df['seed'].unique())\r\n    policies_list = sorted(df['policy'].unique())\r\n    print(f'Seeds: {seeds_list}')\r\n    print(f'Policies ({len(policies_list)}): {policies_list}')\r\nelse:\r\n    print('✗ File not found')\r\n"
+        }
+    ]
+}
