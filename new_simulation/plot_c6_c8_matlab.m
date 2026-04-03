@@ -1,6 +1,6 @@
 % 文件路径（请根据实际情况修改）
-csvFile = 'results_paper_c5/stress_scan_summary.csv';
-outDir = 'figures_paper_c5';
+csvFile = 'results_2000ep_3seed_20260403/stress_scan_summary.csv';
+outDir = 'figures_2000ep_3seed_20260403';
 
 % ==================== 检测分隔符 ====================
 fid = fopen(csvFile, 'r', 'n', 'UTF-8');
@@ -103,80 +103,80 @@ end
 T_sel = dataTable(:, selectedCols);
 T_sel.Properties.VariableNames = requiredCols;
 
-% 筛选 scenario = 'user_num'
-if isnumeric(T_sel.scenario)
-    T_sel.scenario = string(T_sel.scenario);
-end
-T_sel = T_sel(strcmp(T_sel.scenario, 'user_num'), :);
-if isempty(T_sel)
-    error('未找到 scenario = user_num 的数据');
-end
-fprintf('筛选后剩余 %d 行\n', height(T_sel));
+% ==================== 生成图A与图C ====================
+plot_c6_c8(T_sel, 'user_num', '设备数', 'c6_c8_vs_user_num_line.png', outDir);
+plot_c6_c8(T_sel, 'f_scale', '计算资源缩放系数', 'c6_c8_vs_f_scale_line.png', outDir);
 
-% 按 (value, policy) 聚合
-[G, valueGroup, policyGroup] = findgroups(T_sel.value, T_sel.policy);
-c6_mean = splitapply(@mean, T_sel.p_c6_viol_mean, G);
-c7_mean = splitapply(@mean, T_sel.p_c7_viol_mean, G);
-c8_mean = splitapply(@mean, T_sel.p_c8_viol_mean, G);
-agg = table(valueGroup, policyGroup, c6_mean, c7_mean, c8_mean, ...
-    'VariableNames', {'value', 'policy', 'c6', 'c7', 'c8'});
-
-% ==================== 仅保留指定策略 ====================
-keepPolicies = {'Full', 'No-EVT', 'Non-MEC', 'Stand-alone MEC', 'Random'};
-agg = agg(ismember(agg.policy, keepPolicies), :);
-if isempty(agg)
-    error('没有找到指定的策略数据。请检查策略名称是否与CSV中的一致。');
-end
-% 保持策略顺序为 keepPolicies 中存在的顺序
-policies = keepPolicies(ismember(keepPolicies, unique(agg.policy)));
-fprintf('保留的策略: %s\n', strjoin(policies, ', '));
-
-% 重新获取 values（可能因过滤而减少，但通常不变）
-values = sort(unique(agg.value));
-
-% ==================== 绘图 ====================
-fig = figure('Position', [100 100 1500 460]);
-tiledlayout(1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
-metrics = {'c6', 'c7', 'c8'};
-titles = {'C6违约率', 'C7违约率', 'C8违约率'};
-colors = lines(numel(policies));
-markers = {'o', 's', 'd', '^', 'v', '>', '<', 'p', 'h', 'x', '+'};
-
-for i = 1:3
-    nexttile;
-    hold on;
-    for pIdx = 1:numel(policies)
-        policy = policies{pIdx};
-        subData = agg(strcmp(agg.policy, policy), :);
-        [~, idx] = ismember(values, subData.value);
-        y = nan(size(values));
-        y(idx) = subData.(metrics{i});
-        plot(values, y, 'LineWidth', 1.8, ...
-            'Marker', markers{mod(pIdx-1, numel(markers))+1}, ...
-            'MarkerSize', 5.5, 'Color', colors(pIdx,:), ...
-            'DisplayName', policy);
+% ==================== 通用绘图函数 ====================
+function plot_c6_c8(T_sel, scenarioName, xLabel, outFile, outDir)
+    % 过滤指定场景
+    if isnumeric(T_sel.scenario)
+        T_sel.scenario = string(T_sel.scenario);
     end
-    hold off;
-%     title(titles{i}, 'FontWeight', 'bold');
-    xlabel('设备数');
-    ylabel(titles{i});
-    ylim([0 1]);
-    grid on;
+    T_s = T_sel(strcmp(T_sel.scenario, scenarioName), :);
+    if isempty(T_s)
+        error('未找到 scenario = %s 的数据', scenarioName);
+    end
+
+    % 按 (value, policy) 聚合
+    [G, valueGroup, policyGroup] = findgroups(T_s.value, T_s.policy);
+    c6_mean = splitapply(@mean, T_s.p_c6_viol_mean, G);
+    c7_mean = splitapply(@mean, T_s.p_c7_viol_mean, G);
+    c8_mean = splitapply(@mean, T_s.p_c8_viol_mean, G);
+    agg = table(valueGroup, policyGroup, c6_mean, c7_mean, c8_mean, ...
+        'VariableNames', {'value', 'policy', 'c6', 'c7', 'c8'});
+
+    % 策略顺序
+    keepPolicies = {'Full', 'IQL', 'No-EVT', 'C6-Only', 'Non-MEC', 'Stand-alone MEC', 'Random', 'Lyapunov-Greedy'};
+    agg = agg(ismember(agg.policy, keepPolicies), :);
+    if isempty(agg)
+        error('没有找到指定的策略数据。请检查策略名称是否与CSV中的一致。');
+    end
+    policies = keepPolicies(ismember(keepPolicies, unique(agg.policy)));
+
+    values = sort(unique(agg.value));
+
+    fig = figure('Position', [100 100 1500 460]);
+    tiledlayout(1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
+    metrics = {'c6', 'c7', 'c8'};
+    titles = {'C6违约率', 'C7违约率', 'C8违约率'};
+    colors = lines(numel(policies));
+    markers = {'o', 's', 'd', '^', 'v', '>', '<', 'p', 'h', 'x', '+'};
+
+    for i = 1:3
+        nexttile;
+        hold on;
+        for pIdx = 1:numel(policies)
+            policy = policies{pIdx};
+            subData = agg(strcmp(agg.policy, policy), :);
+            [~, idx] = ismember(values, subData.value);
+            y = nan(size(values));
+            y(idx) = subData.(metrics{i});
+            plot(values, y, 'LineWidth', 1.8, ...
+                'Marker', markers{mod(pIdx-1, numel(markers))+1}, ...
+                'MarkerSize', 5.5, 'Color', colors(pIdx,:), ...
+                'DisplayName', policy);
+        end
+        hold off;
+        xlabel(xLabel);
+        ylabel(titles{i});
+        ylim([0 1]);
+        grid on;
+    end
+
+    lgd = legend('Location', 'best', 'NumColumns', 1);
+    lgd.Box = 'on';
+
+    if ~exist(outDir, 'dir')
+        mkdir(outDir);
+    end
+    outFileFull = fullfile(outDir, outFile);
+    if exist('exportgraphics', 'file')
+        exportgraphics(fig, outFileFull, 'Resolution', 300);
+    else
+        print(fig, outFileFull, '-dpng', '-r300');
+    end
+    fprintf('图片已保存至: %s\n', outFileFull);
 end
 
 
-lgd = legend('Location', 'best', 'NumColumns', 1);
-lgd.Box = 'on';
-
-
-% 保存图片（兼容旧版 MATLAB）
-if ~exist(outDir, 'dir')
-    mkdir(outDir);
-end
-outFile = fullfile(outDir, 'c6_c8_vs_user_num_line.png');
-if exist('exportgraphics', 'file')
-    exportgraphics(fig, outFile, 'Resolution', 300);
-else
-    print(fig, outFile, '-dpng', '-r300');
-end
-fprintf('图片已保存至: %s\n', outFile);

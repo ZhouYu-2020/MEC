@@ -1,0 +1,18 @@
+{
+    "sourceFile": "new_simulation/plot_total_energy_errorbar.py",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775205571260,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775205571260,
+            "name": "Commit-0",
+            "content": "import argparse\r\nimport os\r\nfrom typing import List\r\n\r\nimport matplotlib.pyplot as plt\r\nimport pandas as pd\r\n\r\n\r\ndef parse_policies(text: str) -> List[str]:\r\n    return [p.strip() for p in text.split(\",\") if p.strip()]\r\n\r\n\r\ndef ensure_dir(path: str) -> None:\r\n    if path and not os.path.isdir(path):\r\n        os.makedirs(path, exist_ok=True)\r\n\r\n\r\ndef plot_energy_errorbar(df: pd.DataFrame, scenario: str, x_label: str, out_path: str, policies: List[str]) -> None:\r\n    subset = df[df[\"scenario\"] == scenario].copy()\r\n    if subset.empty:\r\n        raise ValueError(f\"No data for scenario '{scenario}'\")\r\n\r\n    subset = subset[subset[\"policy\"].isin(policies)]\r\n    if subset.empty:\r\n        raise ValueError(\"No data after policy filtering\")\r\n\r\n    group = (\r\n        subset.groupby([\"value\", \"policy\"], as_index=False)\r\n        .agg(total_energy_mean=(\"total_energy\", \"mean\"), total_energy_std=(\"total_energy\", \"std\"))\r\n    )\r\n\r\n    x_values = sorted(group[\"value\"].unique())\r\n    plt.figure(figsize=(8.5, 4.6))\r\n    for policy in policies:\r\n        policy_rows = group[group[\"policy\"] == policy]\r\n        if policy_rows.empty:\r\n            continue\r\n        y = []\r\n        yerr = []\r\n        for x in x_values:\r\n            row = policy_rows[policy_rows[\"value\"] == x]\r\n            if row.empty:\r\n                y.append(float(\"nan\"))\r\n                yerr.append(0.0)\r\n            else:\r\n                y.append(float(row[\"total_energy_mean\"].iloc[0]))\r\n                yerr.append(float(row[\"total_energy_std\"].iloc[0] if pd.notna(row[\"total_energy_std\"].iloc[0]) else 0.0))\r\n        plt.errorbar(x_values, y, yerr=yerr, marker=\"o\", capsize=3, linewidth=1.6, label=policy)\r\n\r\n    plt.xlabel(x_label)\r\n    plt.ylabel(\"总能耗\")\r\n    plt.grid(True, linestyle=\"--\", alpha=0.5)\r\n    plt.legend(loc=\"best\", ncol=1, frameon=True)\r\n    plt.tight_layout()\r\n    plt.savefig(out_path, dpi=300)\r\n    plt.close()\r\n\r\n\r\ndef main() -> None:\r\n    parser = argparse.ArgumentParser()\r\n    parser.add_argument(\"--input\", required=True, help=\"Path to stress_scan_raw.csv\")\r\n    parser.add_argument(\"--out-dir\", required=True, help=\"Output directory for figures\")\r\n    parser.add_argument(\r\n        \"--policies\",\r\n        default=\"Full,IQL,No-EVT,C6-Only,Non-MEC,Stand-alone MEC,Random,Lyapunov-Greedy\",\r\n        help=\"Comma-separated list of policies to plot\",\r\n    )\r\n    args = parser.parse_args()\r\n\r\n    ensure_dir(args.out_dir)\r\n    policies = parse_policies(args.policies)\r\n\r\n    df = pd.read_csv(args.input)\r\n    if \"total_energy\" not in df.columns:\r\n        raise ValueError(\"Column 'total_energy' not found in input CSV\")\r\n\r\n    user_out = os.path.join(args.out_dir, \"total_energy_vs_user_num_errorbar.png\")\r\n    plot_energy_errorbar(df, \"user_num\", \"设备数\", user_out, policies)\r\n\r\n    fscale_out = os.path.join(args.out_dir, \"total_energy_vs_f_scale_errorbar.png\")\r\n    plot_energy_errorbar(df, \"f_scale\", \"计算资源缩放系数\", fscale_out, policies)\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n"
+        }
+    ]
+}

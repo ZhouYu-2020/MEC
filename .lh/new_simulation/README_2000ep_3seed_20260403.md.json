@@ -1,0 +1,18 @@
+{
+    "sourceFile": "new_simulation/README_2000ep_3seed_20260403.md",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1775207622608,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1775207622608,
+            "name": "Commit-0",
+            "content": "# 2000ep 3-seed 实验复现与绘图说明（20260403）\r\n\r\n## 1. 实验配置\r\n- 迭代回合: 2000\r\n- 热身比例: 0.7\r\n- 种子: 7, 16, 24\r\n- 资源基准: mec_bw_base=1e8, mec_f_base=6.6e12\r\n- 策略: Full, IQL, No-EVT, C6-Only, Non-MEC, Stand-alone MEC, Random, Lyapunov-Greedy\r\n- 扫描场景:\r\n  - user_num: 5, 10, 15, 20, 25, 30, 35, 40\r\n  - f_scale: 0.4, 0.6, 0.8, 1.0, 1.2, 1.4\r\n  - load_scale: 0.5, 1.0, 1.5, 2.0\r\n\r\n## 2. 仿真数据存储位置\r\n本轮实验结果保存在以下目录：\r\n- new_simulation/results_2000ep_3seed_20260403/\r\n\r\n关键文件：\r\n- stress_scan_raw.csv\r\n- stress_scan_summary.csv\r\n- weight_sweep_raw.csv\r\n- weight_sweep_summary.csv\r\n\r\n## 3. 运行实验的命令\r\n在项目根目录运行：\r\n\r\nD:/Python/Anaconda/Scripts/conda.exe run -p D:\\Python\\Anaconda --no-capture-output python c:\\Users\\zoey\\.vscode\\extensions\\ms-python.python-2026.4.0-win32-x64\\python_files\\get_output_via_markers.py \\\r\n  new_simulation/run_new_experiments.py \\\r\n  --episodes 2000 \\\r\n  --warmup_ratio 0.7 \\\r\n  --seeds 7,16,24 \\\r\n  --mec_bw_base 1e8 \\\r\n  --mec_f_base 6.6e12 \\\r\n  --out_dir \"new_simulation/results_2000ep_3seed_20260403\" \\\r\n  --overwrite_outputs\r\n\r\n## 4. 绘图（误差棒）\r\n### 4.1 C6-C8 约束误差棒图\r\n输出目录：\r\n- new_simulation/figures_2000ep_3seed_20260403/\r\n\r\n绘图命令：\r\n\r\nD:/Python/Anaconda/Scripts/conda.exe run -p D:\\Python\\Anaconda --no-capture-output python c:\\Users\\zoey\\.vscode\\extensions\\ms-python.python-2026.4.0-win32-x64\\python_files\\get_output_via_markers.py \\\r\n  new_simulation/plot_c6_c8_errorbar.py \\\r\n  --input \"new_simulation/results_2000ep_3seed_20260403/stress_scan_raw.csv\" \\\r\n  --out-dir \"new_simulation/figures_2000ep_3seed_20260403\" \\\r\n  --dedup-mode last \\\r\n  --policies \"Full,IQL,No-EVT,C6-Only,Non-MEC,Stand-alone MEC,Random,Lyapunov-Greedy\"\r\n\r\n主要输出图片：\r\n- c6_c8_vs_user_num_errorbar_last.png\r\n- c6_dual_vs_user_num_errorbar_last.png\r\n- c6_c8_vs_f_scale_errorbar_last.png\r\n- c6_dual_vs_f_scale_errorbar_last.png\r\n\r\n### 4.2 总能耗误差棒图\r\n绘图脚本：\r\n- new_simulation/plot_total_energy_errorbar.py\r\n\r\n绘图命令：\r\n\r\nD:/Python/Anaconda/Scripts/conda.exe run -p D:\\Python\\Anaconda --no-capture-output python c:\\Users\\zoey\\.vscode\\extensions\\ms-python.python-2026.4.0-win32-x64\\python_files\\get_output_via_markers.py \\\r\n  new_simulation/plot_total_energy_errorbar.py \\\r\n  --input \"new_simulation/results_2000ep_3seed_20260403/stress_scan_raw.csv\" \\\r\n  --out-dir \"new_simulation/figures_2000ep_3seed_20260403\"\r\n\r\n主要输出图片：\r\n- total_energy_vs_user_num_errorbar.png\r\n- total_energy_vs_f_scale_errorbar.png\r\n\r\n## 5. 说明\r\n- total_energy 和 avg_energy_per_slot_user 已在 stress_scan_raw.csv 中保存。\r\n- 若中文标签显示乱码，请在 matplotlib 中显式配置中文字体后再重绘。\r\n"
+        }
+    ]
+}
